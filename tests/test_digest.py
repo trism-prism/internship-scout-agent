@@ -100,11 +100,8 @@ def test_render_escapes_and_links_only_https():
     assert "<b>88</b> &middot; Acme" in html and "88 - Acme - Plain" in text
     assert "  + R: E" in text and "  - gap: G" in text
     assert digest.render([row()], 1)[0] == "Internship Scout: 1 match"
-
-
-def test_href_quote_breakout_is_escaped():
-    _, html, _ = digest.render([row(url='https://x.com/"onmouseover="a')], 1)
-    assert 'href="https://x.com/&quot;onmouseover=&quot;a"' in html and '"onmouseover=' not in html
+    _, quoted, _ = digest.render([row(url='https://x.com/"onmouseover="a')], 1)  # href quote breakout
+    assert 'href="https://x.com/&quot;onmouseover=&quot;a"' in quoted and '"onmouseover=' not in quoted
 
 
 def test_idempotency_key_stable_per_ids():

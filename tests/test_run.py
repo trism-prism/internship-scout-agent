@@ -118,18 +118,10 @@ def test_digest_sent_flag_set_on_success(db, monkeypatch, no_digest):
     assert no_digest[0][1:] == (1, 1)
 
 
-def test_digest_failure_keeps_run_succeeded(db, monkeypatch):
+@pytest.mark.parametrize("exc", [httpx.ConnectError("sk-secret-value"), OSError("secret")], ids=["connect-error", "os-error"])
+def test_digest_failure_keeps_run_succeeded(db, monkeypatch, exc):
     def boom(*a):
-        raise httpx.ConnectError("sk-secret-value")
-
-    monkeypatch.setattr(run, "deliver", boom)
-    code, row = run_once(db, monkeypatch, ta.msg([ta.rec(1)]), ta.end())
-    assert (code, row["status"], row["digest_sent"]) == (0, "succeeded", False)
-
-
-def test_any_digest_error_keeps_run_succeeded(db, monkeypatch):
-    def boom(*a):
-        raise OSError("secret")
+        raise exc
 
     monkeypatch.setattr(run, "deliver", boom)
     code, row = run_once(db, monkeypatch, ta.msg([ta.rec(1)]), ta.end())
